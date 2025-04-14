@@ -8,7 +8,7 @@ const SHARED_SECRET = 'hello';
 //port
 const PORT = 41234;
 
-//create the token
+//create the token, used to connect with http sever via websocket
 function createAuthToken() {
   const timestamp = Date.now().toString(); 
   const hash = crypto.createHmac('sha256', SHARED_SECRET).update(timestamp).digest('hex');
