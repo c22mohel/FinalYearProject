@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SmartEye Summary</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 220px;
+      text-align: center;
+    }
+
+    .value {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #007bff;
+    }
+    .label {
+      font-size: 1.1em;
+      margin-top: 10px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Driver Summary</h1>
+  <div class="grid">
+    <div class="card">
+      <div class="value" id="distractionValue">--%</div>
+      <div class="label">Distraction</div>
+    </div>
+    <div class="card">
+      <div class="value" id="smokingValue">--%</div>
+      <div class="label">Smoking</div>
+    </div>
+    <div class="card">
+      <div class="value" id="eatingValue">--%</div>
+      <div class="label">Eating</div>
+    </div>
+    <div class="card">
+      <div class="value" id="drinkingValue">--%</div>
+      <div class="label">Drinking</div>
+    </div>
+    <div class="card">
+      <div class="value" id="phoningValue">--%</div>
+      <div class="label">Phoning</div>
+    </div>
+    <div class="card">
+      <div class="value" id="eyesOnRoadValue">--%</div>
+      <div class="label">Eyes on Road</div>
+    </div>
+  </div>
+
+  <script>
+    async function loadSummary() {
+      try {
+        const res = await fetch('/summaryData');
+        const data = await res.json();
+
+        document.getElementById('distractionValue').innerText = `${data.distraction}%`;
+        document.getElementById('smokingValue').innerText = `${data.smoking}%`;
+        document.getElementById('eatingValue').innerText = `${data.eating}%`;
+        document.getElementById('drinkingValue').innerText = `${data.drinking}%`;
+        document.getElementById('phoningValue').innerText = `${data.phoning}%`;
+        document.getElementById('eyesOnRoadValue').innerText = `${data.eyes_on_road}%`;
+      } catch (err) {
+        console.error('Error loading summary:', err);
+        const fields = ['distractionValue', 'smokingValue', 'eatingValue', 'drinkingValue', 'phoningValue', 'eyesOnRoadValue'];
+        fields.forEach(id => document.getElementById(id).innerText = 'Error');
+      }
+    }
+
+    loadSummary();
+  </script>
+</body>
+</html>
