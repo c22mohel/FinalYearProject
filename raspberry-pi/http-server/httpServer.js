@@ -4,6 +4,14 @@ const WebSocket = require('ws');
 const http = require('http');
 const crypto = require('crypto');
 
+const fs   = require('fs');
+const path = require('path');
+const hrtime = () => process.hrtime.bigint();
+
+// two separate log files
+const GET_TIMINGS_FILE    = path.join(__dirname, 'get_times.log');
+const DELETE_TIMINGS_FILE = path.join(__dirname, 'delete_times.log');
+
 const { time } = require('console');
 
 const app = express();
@@ -112,16 +120,34 @@ app.get('/data', async (req, res) => {
 
 //seends all data older than 10 minutes then deletes that data
     try {
+
+        //first time get 
+        const t0 = hrtime();
+
         const result = await db.query(`
           SELECT * FROM smarteye_expanded
           WHERE received_at < NOW() - INTERVAL '1 minutes'
           ORDER BY received_at ASC
         `);
 
+        // second time get
+        const t1 = hrtime();
+
+        // log into file Get
+        fs.appendFileSync(GET_TIMINGS_FILE, (t1 - t0).toString() + '\n');
+
+        //first time delete
+        const t2 = hrtime();
+
         await db.query(`
           DELETE FROM smarteye_expanded
           WHERE received_at < NOW() - INTERVAL '1 minutes'
         `);
+
+        // second time delete
+        const t3 = hrtime();
+        // log to file delete
+        fs.appendFileSync(DELETE_TIMINGS_FILE, (t3 - t2).toString() + '\n');
 
         console.log(`Deleted ${result.rows.length} old rows`);
 
