@@ -3,6 +3,13 @@ const { Client } = require('pg');
 const WebSocket = require('ws');
 const crypto = require('crypto');
 
+const hrtime = () => process.hrtime.bigint();
+const fs = require('fs');
+const path = require('path');
+
+//file for benchmarking
+const TIMINGS_FILE = path.join(__dirname, 'insert_times.log');
+
 //shared key with http
 const SHARED_SECRET = 'hello';
 //port
@@ -65,6 +72,9 @@ server.on('message', async (msg, rinfo) => {
     const logMillis = parseInt(Number(data.log_timestamp_millis));
     const seq = parseInt(Number(data.seq));
     const rawTimestamp = parseInt(Number(data.timestamp));
+
+      //start time for benchmarking 
+      const t0 = hrtime();
 
     // Insert JSON data into the database
     await db.query(
@@ -162,6 +172,11 @@ server.on('message', async (msg, rinfo) => {
       ]
     );
     console.log('Inserted row successfully');
+
+    //end time for benchmarking
+    const t1 = hrtime();
+    //write to log file
+    fs.appendFileSync(TIMINGS_FILE, (t1 - t0).toString() + '\n')
 
   } catch (err) {
     console.error(`Invalid JSON or DB insert error:`, err.message);
