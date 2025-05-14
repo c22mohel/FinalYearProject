@@ -19,6 +19,9 @@ const PORT = 3000;
 
 const SHARED_SECRET = 'hello';
 
+// Set how long data is retained (in minutes)
+const DATA_RETENTION_MINUTES = 1;
+
 //verifyes the token from udpServer
 function verifyToken(token, timestamp) {
   const MAX_AGE_MS = 10000; // 10 seconds
@@ -118,15 +121,16 @@ app.get('/', (req, res) => {
 
 app.get('/data', async (req, res) => {
 
-//seends all data older than 10 minutes then deletes that data
+//seends all data older than DATA_RETENTION_MINUTES then deletes that data
     try {
 
+      const interval = `${DATA_RETENTION_MINUTES} minutes`;
         //first time get 
         const t0 = hrtime();
 
         const result = await db.query(`
           SELECT * FROM smarteye_expanded
-          WHERE received_at < NOW() - INTERVAL '1 minutes'
+          WHERE received_at < NOW() - INTERVAL '${interval}'
           ORDER BY received_at ASC
         `);
 
@@ -141,7 +145,7 @@ app.get('/data', async (req, res) => {
 
         await db.query(`
           DELETE FROM smarteye_expanded
-          WHERE received_at < NOW() - INTERVAL '1 minutes'
+          WHERE received_at < NOW() - INTERVAL '${interval}'
         `);
 
         // second time delete
