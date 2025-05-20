@@ -188,21 +188,25 @@ def _parse_message0(data):
 # callback is a function with arguments seq and tracking info (see the example printout below)
 
 def run(callback, log_filename = None):
-    ports=[4567,4568]
-    portIdx = 0
+
+
+
     sock = None
     file = open(log_filename, "w") if log_filename else None
     def try_to_work():
         nonlocal sock
         last_file_flush = time.time()
-        #server = ("smarteye.local", ports[portIdx])
-        server = SENSOR_ADDR
+        server = ("smarteye.local", 4567)
+        #server = SENSOR_ADDR
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind(("", 1234))
 
         sock.sendto(bytes(), server)
         # print("Request to send messages sent, waiting for responses...")
         sock.settimeout(5)
+        last_keepalive_send = time.time()
+
         while True:
             buffer, _ = sock.recvfrom(RECIEVE_BUFFER_SIZE)
             if buffer and file:
@@ -232,6 +236,9 @@ def run(callback, log_filename = None):
             else:
                 print("Ignoring message of unknown type", message_type)
                 continue
+            if time.time() - last_keepalive_send > 10:
+                sock.sendto(bytes(), server)
+                last_keepalive_send = time.time()
     while True:
         try:
             try_to_work()
@@ -251,7 +258,7 @@ def printout(seq, tracking_info):
     if not tracking_info:
         return
 
-    # 1) Build a payload matching Node.js fields
+    # 1) Build a payload matching your Node.js fields
     payload = {}
 
     # timestamp of when we logged this row
@@ -275,6 +282,7 @@ def printout(seq, tracking_info):
     msg = json.dumps(payload).encode("utf-8")
     udp_out.sendto(msg, NODE_ADDR)
 
+    # (optional) debug
     print(f"→ Sent JSON ({len(msg)} bytes) to {NODE_ADDR}")
 
 
