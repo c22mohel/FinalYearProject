@@ -10,7 +10,8 @@ import time
 import json
 
 # where the Node.js UDP server is listening:
-NODE_ADDR = ("192.168.182.126", 41234)
+#NODE_ADDR = ("192.168.182.126", 41234)
+NODE_ADDR = ("127.0.0.1", 41234)
 udp_out   = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Maximum response length
